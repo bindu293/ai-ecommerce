@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { 
   Typography, 
@@ -10,10 +10,13 @@ import {
   Chip,
   Container,
   Paper,
-  Slider
+  Slider,
+  Button
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import ProductCard from '../components/ProductCard'
+import SmartAssistant from '../components/SmartAssistant'
+import { ENABLE_SMART_ASSISTANT, SHOW_SMART_PICKS_REASONS } from '../config/uiFlags'
 import api from '../services/api'
 
 const FilterSection = styled(Paper)({
@@ -49,6 +52,10 @@ const CategoryChip = styled(Chip)({
 export default function Home() {
   const [products, setProducts] = useState([])
   const [recs, setRecs] = useState([])
+  const [assistantOpen, setAssistantOpen] = useState(false)
+  const [assistantRecs, setAssistantRecs] = useState([])
+  const [assistantCriteria, setAssistantCriteria] = useState(null)
+  const smartPicksRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
@@ -85,7 +92,20 @@ export default function Home() {
       const response = await api.get(`/products?${params}`)
       const productsData = response.data.data || response.data || []
       console.log('Received products:', productsData.length, 'First product price:', productsData[0]?.price)
-      setProducts(productsData)
+      // Deduplicate by id and ensure image fallback
+      const map = new Map()
+      for (const p of productsData) {
+        const id = p.id || p._id || String(p.name || Math.random())
+        if (!map.has(id)) {
+          map.set(id, {
+            ...p,
+            id,
+            image: p.image || `https://via.placeholder.com/300x200?text=${encodeURIComponent(p.name || 'Product')}`,
+          })
+        }
+      }
+      const uniqueProducts = Array.from(map.values())
+      setProducts(uniqueProducts)
     } catch (error) {
       console.error('Error fetching products:', error)
     } finally {
@@ -95,7 +115,11 @@ export default function Home() {
 
   const fetchRecommendations = async () => {
     try {
-      const response = await api.get('/ai/recommendations?limit=8')
+      const params = new URLSearchParams({
+        limit: '8',
+        ...(category !== 'all' && { category }),
+      })
+      const response = await api.get(`/ai/recommendations?${params}`)
       setRecs(response.data.data || response.data || [])
     } catch (error) {
       console.error('Error fetching recommendations:', error)
@@ -161,6 +185,19 @@ export default function Home() {
               sx={{ color: '#ff9900' }}
             />
           </Box>
+
+          {ENABLE_SMART_ASSISTANT && (
+            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
+              <Button 
+                variant="contained"
+                color="secondary"
+                onClick={() => setAssistantOpen(true)}
+                sx={{ fontWeight: 600, textTransform: 'none' }}
+              >
+                ✨ Smart Shopping Assistant
+              </Button>
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -175,6 +212,53 @@ export default function Home() {
           ))}
         </Box>
       </FilterSection>
+
+      {ENABLE_SMART_ASSISTANT && (
+        <SmartAssistant 
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+          onComplete={(items, answers) => { setAssistantRecs(items); setAssistantCriteria(answers); }}
+          categories={categories}
+        />
+      )}
+
+      {assistantRecs.length > 0 && (
+        <Box sx={{ mb: 6 }} ref={smartPicksRef}>
+          <SectionTitle component="div">
+            🧠 Smart Picks For You
+            {ENABLE_SMART_ASSISTANT && (
+              <Chip label="Based on your answers" size="small" color="secondary" sx={{ ml: 1 }} />
+            )}
+            <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+              {ENABLE_SMART_ASSISTANT && (
+                <Chip label="Apply these as filters" color="primary" variant="outlined" onClick={applyAssistantAsFilters} />
+              )}
+            </Box>
+          </SectionTitle>
+          <Box sx={{ 
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' },
+            gap: 2
+          }}>
+            {assistantRecs.map(({ product, reasons }) => (
+              <Box key={`smart-${product.id}`}>
+                <ProductCard product={product} />
+                {SHOW_SMART_PICKS_REASONS && (
+                  <Box sx={{ p: 1, mt: 1, mb: 2, backgroundColor: 'white', border: '1px solid #eee', borderRadius: 1 }}>
+                    {reasons.slice(0, 3).map((r, i) => (
+                      <Typography key={i} variant="caption" sx={{ display: 'block', color: 'text.secondary', wordBreak: 'break-word', lineHeight: 1.4 }}>• {r}</Typography>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {/* Compare Top 3 removed */}
+
+      {/* Quick Intent removed */}
 
       {/* AI Recommendations Section */}
       {!search && recs.length > 0 && (
@@ -285,3 +369,15 @@ export default function Home() {
     </Container>
   )
 }
+  const applyAssistantAsFilters = () => {
+    if (!assistantCriteria) return
+    const { category: aCat, budget } = assistantCriteria
+    if (aCat && aCat !== 'all') setCategory(aCat)
+    if (Array.isArray(budget)) setPriceRange(budget)
+    // Optionally bump sort to rating to surface best reviewed
+    setSort('rating')
+    // Scroll to product grid
+    setTimeout(() => {
+      smartPicksRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 50)
+  }

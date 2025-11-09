@@ -1,6 +1,6 @@
 // Wishlist Context
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db } from '../config/firebase';
+import { auth, db } from '../services/firebase';
 import { collection, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 const WishlistContext = createContext();
@@ -29,22 +29,22 @@ export const WishlistProvider = ({ children }) => {
           if (wishlistDoc.exists()) {
             const wishlistData = wishlistDoc.data();
             const productIds = wishlistData.productIds || [];
-            
-            // Load product details for each product ID
-            const products = [];
-            for (const productId of productIds) {
-              const productDoc = await getDoc(doc(db, 'products', productId));
-              if (productDoc.exists()) {
-                products.push({
-                  id: productDoc.id,
-                  ...productDoc.data(),
-                  addedToWishlist: wishlistData.addedAt?.[productId] || new Date().toISOString()
-                });
-              }
-            }
-            
-            setWishlist(products);
-            setWishlistCount(products.length);
+
+            // Concurrently load product details to avoid slow sequential fetches
+            const productDocs = await Promise.all(
+              productIds.map((pid) => getDoc(doc(db, 'products', pid)))
+            )
+
+            const products = productDocs
+              .filter((pdoc) => pdoc.exists())
+              .map((pdoc) => ({
+                id: pdoc.id,
+                ...pdoc.data(),
+                addedToWishlist: wishlistData.addedAt?.[pdoc.id] || new Date().toISOString(),
+              }))
+
+            setWishlist(products)
+            setWishlistCount(products.length)
           } else {
             setWishlist([]);
             setWishlistCount(0);

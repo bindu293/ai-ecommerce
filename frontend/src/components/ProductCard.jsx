@@ -25,9 +25,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }))
 
 const StyledImage = styled(CardMedia)({
-  height: 200,
+  height: 160,
   objectFit: 'contain',
-  padding: '12px',
+  padding: '8px',
   backgroundColor: '#fff',
   transition: 'transform 0.3s ease',
   '&:hover': {
@@ -79,7 +79,15 @@ export default function ProductCard({ product }) {
   return (
     <StyledCard component={RouterLink} to={`/product/${product.id}`} sx={{ textDecoration: 'none', color: 'inherit' }} className="product-card">
       <Box sx={{ position: 'relative' }}>
-        <StyledImage component="img" image={img} alt={product.name} />
+        <StyledImage
+          component="img"
+          src={img}
+          alt={product.name}
+          sx={{ width: '100%' }}
+          onError={(e) => {
+            e.currentTarget.src = `https://placehold.co/300x200?text=${encodeURIComponent(product.name)}`
+          }}
+        />
         <IconButton
           onClick={handleWishlistClick}
           sx={{

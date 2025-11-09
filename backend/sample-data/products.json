@@ -6,5 +6,11 @@
   {"id":"hoodie","name":"Classic Hoodie","category":"Apparel","price":39.99,"rating":4.5,"image":"","description":"Warm fleece hoodie with kangaroo pocket."},
   {"id":"backpack-pro","name":"Backpack Pro","category":"Accessories","price":69.99,"rating":4.7,"image":"","description":"Laptop sleeve, water-resistant, ergonomic straps."},
   {"id":"water-bottle","name":"Insulated Water Bottle","category":"Home","price":24.99,"rating":4.8,"image":"","description":"Keeps drinks cold for 24h, hot for 12h."},
-  {"id":"yoga-mat","name":"Yoga Mat","category":"Fitness","price":29.99,"rating":4.4,"image":"","description":"Non-slip grip, cushioned comfort."}
+  {"id":"yoga-mat","name":"Yoga Mat","category":"Fitness","price":29.99,"rating":4.4,"image":"","description":"Non-slip grip, cushioned comfort."},
+  {"id":"organic-face-serum","name":"Organic Face Serum","category":"Skincare","price":34.99,"rating":4.9,"image":"","description":"A rejuvenating serum made with natural ingredients to revitalize your skin."},
+  {"id":"smart-thermostat","name":"Smart Thermostat","category":"Smart Home","price":199.99,"rating":4.7,"image":"","description":"Save energy and control your home's temperature from anywhere with this smart thermostat."},
+  {"id":"reusable-beeswax-wraps","name":"Reusable Beeswax Wraps","category":"Eco-friendly","price":18.99,"rating":4.8,"image":"","description":"A sustainable alternative to plastic wrap for food storage, made from organic cotton and beeswax."},
+  {"id":"portable-solar-charger","name":"Portable Solar Charger","category":"Electronics","price":45.99,"rating":4.6,"image":"","description":"Charge your devices on the go with this compact and efficient solar-powered charger."},
+  {"id":"noise-cancelling-headphones","name":"Noise-Cancelling Headphones","category":"Electronics","price":249.99,"rating":4.8,"image":"","description":"Immerse yourself in sound with these premium noise-cancelling headphones."},
+  {"id":"air-fryer","name":"Air Fryer","category":"Kitchen","price":89.99,"rating":4.7,"image":"","description":"Enjoy your favorite fried foods with less oil using this versatile air fryer."}
 ]

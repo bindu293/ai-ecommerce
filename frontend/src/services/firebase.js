@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged as _onAuthStateChanged, signInWithEmailAndPassword as _signIn, createUserWithEmailAndPassword as _signup, signOut as _signOut } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const cfg = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,6 +18,7 @@ let onAuthStateChanged
 let signInWithEmailAndPassword
 let createUserWithEmailAndPassword
 let signOut
+let db
 
 if (hasFirebase) {
   const app = initializeApp(cfg)
@@ -25,6 +27,7 @@ if (hasFirebase) {
   signInWithEmailAndPassword = _signIn
   createUserWithEmailAndPassword = _signup
   signOut = _signOut
+  db = getFirestore(app)
 } else {
   // Fallback stubs so the app runs without Firebase config
   auth = { currentUser: null }
@@ -33,6 +36,7 @@ if (hasFirebase) {
   signInWithEmailAndPassword = notConfigured
   createUserWithEmailAndPassword = notConfigured
   signOut = () => Promise.resolve()
+  db = null
 }
 
-export { auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut }
+export { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut }

@@ -9,6 +9,12 @@ const { auth } = require('../../config/firebase');
  */
 const authenticateUser = async (req, res, next) => {
   try {
+    if (!auth) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication not configured. Set Firebase Admin env variables.'
+      });
+    }
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
