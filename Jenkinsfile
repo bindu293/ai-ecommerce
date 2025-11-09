@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
-        // Add your Jenkins Docker Hub credentials ID here
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
@@ -56,7 +55,8 @@ pipeline {
 
     post {
         always {
-            bat "docker-compose -f %COMPOSE_FILE% down"
+            // bat "docker-compose -f %COMPOSE_FILE% down"  <-- Commented out so website stays running
+            echo "Build finished. Containers are still running. Open localhost to see the website."
         }
     }
 }
