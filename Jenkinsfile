@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Path to your docker-compose file
         COMPOSE_FILE = 'docker-compose.yml'
-        // Your Docker Hub credentials ID (store it in Jenkins credentials)
+        // Docker Hub credentials ID (if you push images later)
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
     }
 
@@ -19,10 +19,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Build the Docker images
-                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_CREDENTIALS_ID) {
-                        sh "docker-compose -f ${env.COMPOSE_FILE} build"
-                    }
+                    // Build the Docker images using Windows batch commands
+                    bat "docker-compose -f ${env.COMPOSE_FILE} build"
                 }
             }
         }
@@ -31,9 +29,9 @@ pipeline {
             steps {
                 script {
                     // Run backend tests
-                    sh "docker-compose -f ${env.COMPOSE_FILE} run --rm backend npm test"
+                    bat "docker-compose -f ${env.COMPOSE_FILE} run --rm backend npm test"
                     // Run frontend tests
-                    sh "docker-compose -f ${env.COMPOSE_FILE} run --rm frontend npm test"
+                    bat "docker-compose -f ${env.COMPOSE_FILE} run --rm frontend npm test"
                 }
             }
         }
@@ -42,7 +40,7 @@ pipeline {
             steps {
                 script {
                     // Deploy the application
-                    sh "docker-compose -f ${env.COMPOSE_FILE} up -d"
+                    bat "docker-compose -f ${env.COMPOSE_FILE} up -d"
                 }
             }
         }
@@ -51,7 +49,7 @@ pipeline {
     post {
         always {
             // Clean up the environment
-            sh "docker-compose -f ${env.COMPOSE_FILE} down"
+            bat "docker-compose -f ${env.COMPOSE_FILE} down"
         }
     }
 }
