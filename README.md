@@ -1,5 +1,5 @@
 # AI E-commerce Monorepo
-
+i made this project
 This is a full-featured, responsive, AI-enhanced e-commerce app.
 
 - Frontend: React + Vite + Material-UI
