@@ -1,31 +1,39 @@
-backend:
-  build:
-    context: ./backend
-    dockerfile: Dockerfile
-  container_name: ai-ecommerce-backend
-  ports:
-    - "5000:5000"
-  env_file:
-    - ./backend/.env.backend
-  restart: unless-stopped
+version: "3.9"
 
-frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile
-    args:
-      VITE_API_URL: /api
-      VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
-      VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
-      VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
-      VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
-      VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID}
-      VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
-  container_name: ai-ecommerce-frontend
-  ports:
-    - "5175:80"
-  depends_on:
-    - backend
-  env_file:
-    - ./frontend/.env
-  restart: unless-stopped
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-ecommerce-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env                 # FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, etc.
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:                      # passed at build-time → Vite sees them
+        VITE_API_URL: /api
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID}
+        VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
+    container_name: ai-ecommerce-frontend
+    ports:
+      - "5175:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: ai-ecommerce-net
