@@ -2,6 +2,7 @@
 // Handles all product-related operations (CRUD)
 
 const { db } = require('../../config/firebase');
+const sampleProducts = require('../../utils/sampleData');
 const { generateProductDescription } = require('../services/aiService');
 
 /**
@@ -12,6 +13,64 @@ const getAllProducts = async (req, res) => {
   try {
     const { category, search, limit = 100, sort = 'newest', minPrice, maxPrice } = req.query;
     
+    // Fallback: if Firestore is not configured, serve sample data
+    if (!db) {
+      let products = sampleProducts.map((p, idx) => {
+        const createdAt = p.createdAt ? new Date(p.createdAt).getTime() : 0;
+        const price = typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0;
+        return {
+          id: p.id || `sample-${idx + 1}`,
+          ...p,
+          price,
+          _createdAt: createdAt,
+        };
+      });
+
+      // Apply category filter
+      if (category && category !== 'all') {
+        products = products.filter(product => product.category === category);
+      }
+
+      // Apply search filter
+      if (search) {
+        const searchLower = String(search).toLowerCase();
+        products = products.filter(product => 
+          (product.name || '').toLowerCase().includes(searchLower) ||
+          (product.description || '').toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Apply price filters
+      const min = minPrice ? parseFloat(minPrice) : null;
+      const max = maxPrice ? parseFloat(maxPrice) : null;
+      if (min !== null) {
+        products = products.filter(p => (p.price ?? 0) >= min);
+      }
+      if (max !== null) {
+        products = products.filter(p => (p.price ?? 0) <= max);
+      }
+
+      // Apply sorting
+      switch (String(sort)) {
+        case 'price_low_to_high':
+          products.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+          break;
+        case 'price_high_to_low':
+          products.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+          break;
+        case 'rating':
+          products.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+          break;
+        case 'newest':
+        default:
+          products.sort((a, b) => (b._createdAt ?? 0) - (a._createdAt ?? 0));
+      }
+
+      const lim = parseInt(limit) || 100;
+      const sliced = products.slice(0, lim);
+      return res.status(200).json({ success: true, count: sliced.length, data: sliced });
+    }
+
     let productsRef = db.collection('products');
     
     // Apply category filter

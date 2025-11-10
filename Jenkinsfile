@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
+        ENV_FILE = '.env'
     }
 
     stages {
@@ -12,9 +13,16 @@ pipeline {
             }
         }
 
+        stage('Pre-clean') {
+            steps {
+                bat "docker-compose -f %COMPOSE_FILE% down --remove-orphans"
+            }
+        }
+
         stage('Build') {
             steps {
-                bat "docker-compose -f %COMPOSE_FILE% build"
+                // Ensure fresh images and envs are applied
+                bat "docker-compose -f %COMPOSE_FILE% --env-file %ENV_FILE% build --pull --no-cache"
             }
         }
 
@@ -35,7 +43,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat "docker-compose -f %COMPOSE_FILE% up -d"
+                bat "docker-compose -f %COMPOSE_FILE% --env-file %ENV_FILE% up -d"
             }
         }
     }

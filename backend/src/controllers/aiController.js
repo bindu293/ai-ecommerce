@@ -1,8 +1,9 @@
 // AI Controller
 // Handles AI-powered product recommendations and descriptions
 
-const { db } = require('../../config/firebase');
+const { db, admin } = require('../../config/firebase');
 const { getProductRecommendations, generateProductDescription } = require('../services/aiService');
+const sampleProducts = require('../../utils/sampleData');
 
 /**
  * Get Product Recommendations
@@ -15,6 +16,16 @@ const getRecommendations = async (req, res) => {
     const userId = req.user?.uid;
     let userData = null;
 
+    // Fallback path when Firestore is not configured
+    if (!db) {
+      let products = sampleProducts.map((p, idx) => ({ id: p.id || `sample-${idx + 1}`, ...p }));
+      if (category && category !== 'all') {
+        products = products.filter(p => p.category === category);
+      }
+      const recs = await getProductRecommendations(products, null, productId, parseInt(limit) || 8);
+      return res.status(200).json({ success: true, count: recs.length, data: recs.slice(0, parseInt(limit) || 8) });
+    }
+
     // Get user data if authenticated
     if (userId) {
       try {
@@ -25,7 +36,7 @@ const getRecommendations = async (req, res) => {
           // Update user browsing history
           if (productId) {
             await db.collection('users').doc(userId).update({
-              browsing_history: db.FieldValue.arrayUnion(productId),
+              browsing_history: admin.firestore.FieldValue.arrayUnion(productId),
             });
           }
         }
