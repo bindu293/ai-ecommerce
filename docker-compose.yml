@@ -4,6 +4,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: ai-ecommerce-backend
     ports:
       - "5000:5000"
@@ -15,6 +16,8 @@ services:
       FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
       JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
+    env_file:
+      - .env   # ensures envs are loaded inside container
 
   frontend:
     build:
@@ -34,6 +37,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    env_file:
+      - .env   # ensures frontend can access envs at runtime (if needed)
 
 networks:
   default:
