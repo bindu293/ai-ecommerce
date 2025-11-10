@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
-        ENV_FILE     = '.env'          // root env with VITE_FIREBASE_*
+        ENV_FILE     = '.env'          // root file with VITE_FIREBASE_* + backend secrets
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build both images; frontend gets VITE_FIREBASE_* via compose build-args
+                // pull base images fresh, ignore cache, inject vars from .env
                 bat "docker-compose -f %COMPOSE_FILE% --env-file %ENV_FILE% build --pull --no-cache"
             }
         }
