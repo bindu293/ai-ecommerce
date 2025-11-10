@@ -19,6 +19,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
         VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
