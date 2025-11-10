@@ -16,7 +16,6 @@ services:
     build:
       context: ./frontend
       args:
-        # Use relative API path; Nginx proxies to backend service
         VITE_API_URL: /api
     container_name: ai-ecommerce-frontend
     ports:

@@ -1,13 +1,13 @@
-import React from 'react'
-import { Card, CardContent, CardMedia, Typography, Box, Rating, Chip, IconButton, Button } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
-import { styled } from '@mui/material/styles'
-import FavoriteIcon from '@mui/icons-material/Favorite'
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { useWishlist } from '../context/WishlistContext'
-import { useAuth } from '../context/AuthContext'
-import { useCart } from '../context/CartContext'
+import React from 'react';
+import { Card, CardContent, CardMedia, Typography, Box, Rating, Chip, IconButton, Button } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -57,16 +57,20 @@ const CategoryChip = styled(Chip)({
 export default function ProductCard({ product }) {
   const { isInWishlist, toggleWishlist } = useWishlist()
   const { user } = useAuth()
-  const { add } = useCart()
-  const img = product.image || `https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}`
-  const rating = product.rating || 0
-  const reviews = product.reviews || 0
+  const { add } = useCart();
+  const img = product.image || `https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}`;
+  const rating = product.rating || 0;
+  const reviews = product.reviews || 0;
 
   const handleAddToCart = (e) => {
-    e.preventDefault()
-    add(product, 1)
-  }
-  
+    e.preventDefault();
+    if (!user) {
+      alert('Please login to add items to your cart');
+      return;
+    }
+    add(product, 1);
+  };
+
   const handleWishlistClick = (e) => {
     e.preventDefault()
     if (!user) {
@@ -98,7 +102,7 @@ export default function ProductCard({ product }) {
             '&:hover': { backgroundColor: 'rgba(255,255,255,1)' }
           }}
         >
-          {isInWishlist(product.id) ? (
+          {user && isInWishlist(product.id) ? (
             <FavoriteIcon sx={{ color: '#ff1744' }} />
           ) : (
             <FavoriteBorderIcon sx={{ color: '#666' }} />
@@ -205,7 +209,7 @@ export default function ProductCard({ product }) {
           size="small" 
           startIcon={<ShoppingCartIcon />}
           onClick={handleAddToCart}
-          disabled={product.stock === 0}
+          disabled={product.stock === 0 || !user}
           sx={{ 
             mt: 1, 
             backgroundColor: '#ff9900', 

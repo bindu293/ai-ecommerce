@@ -43,7 +43,7 @@ pipeline {
     post {
         always {
             echo "✅ Deployment complete. Your website is running."
-            echo "🌐 View it in browser at: http://localhost:5173"
+            echo "🌐 View it in browser at: http://localhost:5175"
         }
     }
 }

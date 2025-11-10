@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Box,
@@ -11,10 +11,14 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@mui/material'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import api from '../services/api'
+  Avatar,
+  Paper,
+  Divider,
+} from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { deepOrange } from '@mui/material/colors';
 
 export default function Profile() {
   const { user, loading: authLoading } = useAuth()
@@ -64,112 +68,62 @@ export default function Profile() {
   const recentOrder = orders.length > 0 ? orders[0] : null
 
   return (
-    <Box sx={{ flexGrow: 1, p: 4, backgroundColor: '#f4f6f8' }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-        Welcome, {user.displayName || user.email}!
-      </Typography>
+    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, backgroundColor: '#f4f6f8' }}>
+      <Paper sx={{ p: 4, mb: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Avatar sx={{ bgcolor: deepOrange[500], width: 80, height: 80, fontSize: '2.5rem' }}>
+          {user.email ? user.email[0].toUpperCase() : 'U'}
+        </Avatar>
+        <Box>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: '#333' }}>
+            Welcome Back!
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            {user.displayName || user.email}
+          </Typography>
+        </Box>
+      </Paper>
+
       <Grid container spacing={4}>
-        {/* Recent Order */}
-        <Grid item xs={12} md={8}>
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Most Recent Order
-              </Typography>
-              {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  {error}
-                </Alert>
-              )}
-              {recentOrder ? (
-                <Box>
-                  <Typography variant="body1">
-                    <strong>Order ID:</strong> {recentOrder.id}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Total:</strong> ${recentOrder.total.toFixed(2)}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Status:</strong> {recentOrder.status}
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to="/orders"
-                    variant="outlined"
-                    sx={{ mt: 2 }}
-                  >
-                    View Details
-                  </Button>
-                </Box>
-              ) : (
-                <Typography variant="body1" color="text.secondary">
-                  You have no recent orders.
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Quick Actions */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
-              </Typography>
-              <Button
-                fullWidth
-                variant="contained"
-                component={RouterLink}
-                to="/orders"
-                sx={{ mb: 2 }}
-              >
-                View All Orders
-              </Button>
-              <Button
-                fullWidth
-                variant="outlined"
-                component={RouterLink}
-                to="/cart"
-              >
-                Go to Cart
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Order History Preview */}
         <Grid item xs={12}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Order History
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                My Orders
               </Typography>
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {`Failed to load orders: ${error}`}
+                </Alert>
+              )}
               {orders.length > 0 ? (
                 <List>
-                  {orders.map((o) => (
-                    <ListItem key={o.id} divider>
-                      <ListItemText
-                        primary={`Order #${o.id}`}
-                        secondary={`Status: ${o.status} | Total: $${o.total.toFixed(2)}`}
-                      />
-                      <Button
-                        component={RouterLink}
-                        to="/orders"
-                        size="small"
-                      >
-                        Track
-                      </Button>
-                    </ListItem>
+                  {orders.map((o, index) => (
+                    <React.Fragment key={o.id}>
+                      <ListItem sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <ListItemText
+                          primary={`Order #${o.id}`}
+                          secondary={`Status: ${o.status} | Total: $${o.total.toFixed(2)}`}
+                        />
+                        <Button component={RouterLink} to={`/orders/${o.id}`} size="small">
+                          View Details
+                        </Button>
+                      </ListItem>
+                      {index < orders.length - 1 && <Divider />}
+                    </React.Fragment>
                   ))}
                 </List>
               ) : (
-                <Typography>No orders to display.</Typography>
+                <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+                  You haven't placed any orders yet.
+                </Typography>
               )}
+              <Button component={RouterLink} to="/orders" sx={{ mt: 2 }}>
+                View All Orders
+              </Button>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
     </Box>
-  )
+  );
 }
