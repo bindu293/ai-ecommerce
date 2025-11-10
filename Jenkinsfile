@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
-        ENV_FILE = '.env'
+        ENV_FILE     = '.env'          // root env with VITE_FIREBASE_*
     }
 
     stages {
@@ -15,14 +15,13 @@ pipeline {
 
         stage('Pre-clean') {
             steps {
-                // Stop and remove containers to avoid stale builds
                 bat "docker-compose -f %COMPOSE_FILE% down --remove-orphans"
             }
         }
 
         stage('Build') {
             steps {
-                // Force fresh build with envs
+                // Build both images; frontend gets VITE_FIREBASE_* via compose build-args
                 bat "docker-compose -f %COMPOSE_FILE% --env-file %ENV_FILE% build --pull --no-cache"
             }
         }
@@ -35,7 +34,6 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Start services with envs
                 bat "docker-compose -f %COMPOSE_FILE% --env-file %ENV_FILE% up -d"
             }
         }
