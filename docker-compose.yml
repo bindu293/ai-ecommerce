@@ -9,7 +9,7 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - .env                 # FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, etc.
+      - backend/.env             # FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, etc.
     environment:
       NODE_ENV: production
       PORT: 5000
